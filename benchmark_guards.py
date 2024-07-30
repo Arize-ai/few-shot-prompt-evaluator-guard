@@ -8,7 +8,6 @@ import statistics
 import pandas as pd
 import numpy as np
 import openai
-from sklearn import shuffle
 
 from nemo_jailbreak_detection_guard import benchmark_nemo
 
@@ -139,7 +138,7 @@ def main():
 
     # Vanilla prompts that we expect to Pass the Guard
     vanilla_prompts = pd.read_csv(VANILLA_PROMPTS_DATASET_FILEPATH)["prompt"].tolist()
-    vanilla_prompts = shuffle(vanilla_prompts)[:NUM_EVAL_EXAMPLES]
+    vanilla_prompts = vanilla_prompts[:NUM_EVAL_EXAMPLES]
 
     # Benchmark Nvidia NeMo off-the-shelf jailbreak Guard
     benchmark_nemo(jailbreak_test_prompts=jailbreak_test_prompts, vanilla_prompts=vanilla_prompts)

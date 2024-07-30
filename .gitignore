@@ -1,0 +1,5 @@
+*__pycache__*
+*.cache*
+*.DS_Store
+*nemo_jailbreak_guard_gpt4_selfcheckinput.txt
+*nemo_jailbreak_dataset_guard_gpt-4o-mini.txt
