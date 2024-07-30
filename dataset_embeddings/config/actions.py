@@ -10,7 +10,7 @@ from nemoguardrails.llm.taskmanager import LLMTaskManager
 log = logging.getLogger(__name__)
 
 
-THRESHOLD = 0.23
+THRESHOLD = 0.2
 
 
 def _embed_function(text) -> np.ndarray:
@@ -32,7 +32,6 @@ def _embed_function(text) -> np.ndarray:
 
 def query_vector_collection(
         text: str,
-        k: int,
         source_embeddings,
     ) -> List[Tuple[str, float]]:
     """Embed user input text and compute cosine distances to prompt source embeddings (jailbreak examples).
@@ -57,10 +56,10 @@ def query_vector_collection(
     )
     
     # Sort indices from lowest cosine distance to highest distance
-    low_to_high_ind = np.argsort(cos_distances)[:k]
+    low_ind = np.argsort(cos_distances)[0]
     
     # Get top-k closest distances
-    lowest_distances = [cos_distances[j] for j in low_to_high_ind]
+    lowest_distances = cos_distances[low_ind]
     return lowest_distances
 
 
@@ -85,12 +84,12 @@ async def dataset_embeddings(
     
     # Get closest chunk in the embedded few shot examples of jailbreak prompts.
     # Get cosine distance between the embedding of the user message and the closest embedded jailbreak prompts chunk.
-    lowest_distance = query_vector_collection(text=user_message, k=1, source_embeddings=source_embeddings)[0]
+    lowest_distance = query_vector_collection(text=user_message, source_embeddings=source_embeddings)
     
     if lowest_distance < THRESHOLD:
-        print(f"TOO SIMILAR cosine distance {lowest_distance}")
+        print(f"FailResult: cosine distance is {lowest_distance}")
         # At least one jailbreak embedding chunk was within the cosine distance threshold from the user input embedding
         return True
     # All chunks exceeded the cosine distance threshold
-    print(f"NOT SIMILAR cosing distance {lowest_distance}")
+    print(f"PassResult: cosine distance is {lowest_distance}")
     return False

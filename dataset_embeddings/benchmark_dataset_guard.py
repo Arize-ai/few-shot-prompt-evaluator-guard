@@ -3,6 +3,7 @@ from getpass import getpass
 from typing import List
 import time
 import statistics
+import json
 
 import pandas as pd
 import openai
@@ -10,9 +11,10 @@ import openai
 from nemoguardrails import LLMRails, RailsConfig
 
 
-JAILBREAK_DATASET_FILEPATH = "/Users/juliagomes/validator-template/validator/jailbreak_prompts_2023_05_07.csv"
-VANILLA_PROMPTS_DATASET_FILEPATH = "/Users/juliagomes/validator-template/validator/regular_prompts_2023_05_07.csv"
-NUM_EVAL_EXAMPLES = 10
+JAILBREAK_DATASET_FILEPATH = "/Users/juliagomes/few-shot-prompt-evaluator-guard/jailbreak_prompts_2023_05_07.csv"
+# Sourced from HuggingFace dataset https://huggingface.co/datasets/MohamedRashad/ChatGPT-prompts
+VANILLA_PROMPTS_DATASET_FILEPATH = "/Users/juliagomes/few-shot-prompt-evaluator-guard/regular_prompts.json"
+NUM_EVAL_EXAMPLES = 25
 NUM_FEW_SHOT_EXAMPLES = 10
 MODEL = "gpt-4o-mini"
 GPT_BASELINE_OUTPUT_FILE = f"{MODEL}_baseline_output.txt"
@@ -66,10 +68,7 @@ def benchmark_nemo(jailbreak_test_prompts, vanilla_prompts):
         f.write(f"\nEvaluate the NeMo Jailbreak Guard against {len(jailbreak_test_prompts)} examples")
     num_passed_nemo, num_failed_nemo, latency_measurements = evaluate_nemo_guard_on_dataset(
         rails=rails,
-        test_prompts=jailbreak_test_prompts,
-        verbose=True,
-        expect_pass=False,
-        outfilepath="/Users/juliagomes/validator-template/validator/nemo_false_negatives.csv")
+        test_prompts=jailbreak_test_prompts)
     with open(OUTFILE, "a") as f:
         f.write(f"\n{num_failed_nemo} True Positives")
         f.write(f"\n{num_passed_nemo} False Negatives")
@@ -80,10 +79,7 @@ def benchmark_nemo(jailbreak_test_prompts, vanilla_prompts):
         f.write(f"\nEvaluate the NeMo Jailbreak Guard against {len(vanilla_prompts)} examples")
     num_passed_nemo, num_failed_nemo, latency_measurements = evaluate_nemo_guard_on_dataset(
         rails=rails,
-        test_prompts=vanilla_prompts,
-        verbose=True,
-        expect_pass=False,
-        outfilepath="/Users/juliagomes/validator-template/validator/nemo_false_positives.csv")
+        test_prompts=vanilla_prompts)
     with open(OUTFILE, "a") as f:
         f.write(f"\n{num_passed_nemo} True Negatives")
         f.write(f"\n{num_failed_nemo} False Positives")
@@ -206,7 +202,8 @@ def main():
     _, jailbreak_test_prompts = split_dataset(sources)
 
     # Vanilla prompts that we expect to Pass the Guard
-    vanilla_prompts = pd.read_csv(VANILLA_PROMPTS_DATASET_FILEPATH)["prompt"].tolist()
+    with open(VANILLA_PROMPTS_DATASET_FILEPATH, 'r') as f:
+        vanilla_prompts = json.loads(f.read())
     vanilla_prompts = vanilla_prompts[:NUM_EVAL_EXAMPLES]
 
     # Benchmark Nvidia NeMo off-the-shelf jailbreak Guard
