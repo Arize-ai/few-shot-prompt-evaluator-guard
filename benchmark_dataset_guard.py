@@ -14,7 +14,7 @@ from nemoguardrails import LLMRails, RailsConfig
 JAILBREAK_DATASET_FILEPATH = "/Users/juliagomes/few-shot-prompt-evaluator-guard/jailbreak_prompts_2023_05_07.csv"
 # Sourced from HuggingFace dataset https://huggingface.co/datasets/MohamedRashad/ChatGPT-prompts
 VANILLA_PROMPTS_DATASET_FILEPATH = "/Users/juliagomes/few-shot-prompt-evaluator-guard/regular_prompts.json"
-NUM_EVAL_EXAMPLES = 100
+NUM_EVAL_EXAMPLES = 500
 NUM_FEW_SHOT_EXAMPLES = 10
 MODEL = "gpt-4o-mini"
 GPT_BASELINE_OUTPUT_FILE = f"{MODEL}_baseline_guard_output.txt"
@@ -215,11 +215,11 @@ def main():
     benchmark_nemo(config=config, outfile=NEMO_DATASET_GUARD_OUTFILE, jailbreak_test_prompts=jailbreak_test_prompts, vanilla_prompts=vanilla_prompts)
 
     # Evaluate Open AI baseline
-    '''with open(GPT_BASELINE_OUTPUT_FILE, "a") as f:
+    with open(GPT_BASELINE_OUTPUT_FILE, "a") as f:
         f.write(f"\n\nEvaluate Open AI baseline on jailbreak prompts")
         evaluate_open_ai_chat(test_prompts=jailbreak_test_prompts)
         f.write(f"\n\nEvaluate Open AI baseline on vanilla prompts")
-        evaluate_open_ai_chat(test_prompts=vanilla_prompts)'''
+        evaluate_open_ai_chat(test_prompts=vanilla_prompts)
 
 
 if __name__ == "__main__":
