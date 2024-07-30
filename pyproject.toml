@@ -1,0 +1,23 @@
+[project]
+name = "few-shot-prompt-evaluator-guard"
+version = "0.0.0"
+description = "Dataset embeddings guard using NeMo."
+authors = [
+    {name = "Arize AI", email = "jgomes@arize.com"}
+]
+license = {file = "LICENSE"}
+readme = "README.md"
+requires-python = ">= 3.8.1"
+
+[project.optional-dependencies]
+dev = [
+    "pyright",
+    "pytest",
+    "ruff"
+] 
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-rP"
+
+[tool.pyright]
