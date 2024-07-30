@@ -9,6 +9,10 @@ from nemoguardrails.llm.taskmanager import LLMTaskManager
 
 log = logging.getLogger(__name__)
 
+
+THRESHOLD = 0.23
+
+
 def _embed_function(text) -> np.ndarray:
     """Function used to embed text with OpenAIEmbedding(model="text-embedding-ada-002").
 
@@ -59,6 +63,7 @@ def query_vector_collection(
     lowest_distances = [cos_distances[j] for j in low_to_high_ind]
     return lowest_distances
 
+
 @action()
 async def dataset_embeddings(
     llm_task_manager: LLMTaskManager, context: Optional[dict] = None, source_embeddings: Optional[list] = None,
@@ -82,7 +87,7 @@ async def dataset_embeddings(
     # Get cosine distance between the embedding of the user message and the closest embedded jailbreak prompts chunk.
     lowest_distance = query_vector_collection(text=user_message, k=1, source_embeddings=source_embeddings)[0]
     
-    if lowest_distance < 0.2:
+    if lowest_distance < THRESHOLD:
         print(f"TOO SIMILAR cosine distance {lowest_distance}")
         # At least one jailbreak embedding chunk was within the cosine distance threshold from the user input embedding
         return True
