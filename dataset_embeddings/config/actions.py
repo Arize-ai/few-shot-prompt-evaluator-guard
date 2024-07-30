@@ -82,11 +82,10 @@ async def dataset_embeddings(
     # Get cosine distance between the embedding of the user message and the closest embedded jailbreak prompts chunk.
     lowest_distance = query_vector_collection(text=user_message, k=1, source_embeddings=source_embeddings)[0]
     
-    # (TODO) HARRISON FIX THIS!!!!!!!
     if lowest_distance < 0.2:
-        print("TOO SIMILAR {}".format(lowest_distance))
+        print(f"TOO SIMILAR cosine distance {lowest_distance}")
         # At least one jailbreak embedding chunk was within the cosine distance threshold from the user input embedding
         return True
     # All chunks exceeded the cosine distance threshold
-    print("NOT SIMILAR {}".format(lowest_distance))
+    print(f"NOT SIMILAR cosing distance {lowest_distance}")
     return False
