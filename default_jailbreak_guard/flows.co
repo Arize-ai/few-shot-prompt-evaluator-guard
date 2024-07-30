@@ -1,0 +1,31 @@
+define bot refuse to respond
+  "Julia I'm sorry, I can't respond to that. "
+
+define bot flag jailbreak
+  "[OFF-THE-SHELF NEMO GUARD] FLAG JAILBREAK This violates my jailbreak detection heuristics. "
+
+define bot flag vanilla
+  "[OFF-THE-SHELF NEMO GUARD] FLAG VANILLA This does not violate my jailbreak detection heuristics. "  
+
+define bot flag badinput
+  "[OFF-THE-SHELF NEMO GUARD] FLAG BAD INPUT This violates my self check input. "
+
+define bot flag goodinput
+  "[OFF-THE-SHELF NEMO GUARD] FLAG GOOD INPUT this input does not violate my self check input. "
+
+define flow self check input
+  $allowed = execute self_check_input
+  if not $allowed
+    bot flag badinput
+  if $allowed
+    bot flag goodinput
+  
+  $is_jailbreak = execute jailbreak_detection_heuristics
+  if $is_jailbreak
+    bot flag jailbreak
+  if not $is_jailbreak
+    bot flag vanilla
+
+  if not $allowed or $is_jailbreak
+    bot refuse to respond
+    stop
