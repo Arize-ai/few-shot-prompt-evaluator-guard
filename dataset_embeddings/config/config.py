@@ -3,8 +3,9 @@ from nemoguardrails import LLMRails
 from llama_index.embeddings.openai import OpenAIEmbedding
 import numpy as np
 import nltk
+import tiktoken
 import itertools
-from dataset import DEFAULT_FEW_SHOT_TRAIN_PROMPTS
+from config.dataset import DEFAULT_FEW_SHOT_TRAIN_PROMPTS
 
 
 def get_chunks_from_text(
