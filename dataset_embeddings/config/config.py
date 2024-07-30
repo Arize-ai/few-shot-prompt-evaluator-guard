@@ -5,7 +5,13 @@ import numpy as np
 import nltk
 import tiktoken
 import itertools
+from typing import List
 from config.dataset import DEFAULT_FEW_SHOT_TRAIN_PROMPTS
+
+
+CHUNK_STRATEGY = "sentence"
+CHUNK_SIZE = 100
+CHUNK_OVERLAP = 20
 
 
 def get_chunks_from_text(
@@ -46,7 +52,6 @@ def get_chunks_from_text(
     elif chunk_strategy == "token":
         if tiktoken is None:
             raise ImportError(tiktoken_error)
-        # FIXME is this the correct way to use tiktoken?
         atomic_chunks = tiktoken(text)  # type: ignore
     else:
         raise ValueError(
@@ -77,17 +82,15 @@ def _embed_function(text) -> np.ndarray:
     return np.array(embeddings_out)
 
 
-def init(app: LLMRails):
-    # pass in dynamically later
-    sources = DEFAULT_FEW_SHOT_TRAIN_PROMPTS
-
+def init(app: LLMRails, sources: List[str] = DEFAULT_FEW_SHOT_TRAIN_PROMPTS, chunk_strategy: str = CHUNK_STRATEGY,
+         chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP):
     # Validate we have a non-empty dataset containing string messages
     for prompt in sources:
         if not prompt or not isinstance(prompt, str):
             raise ValueError(f"Prompt example: {prompt} is invalid. Must contain valid string data.")
 
     chunks = [
-        get_chunks_from_text(source, "sentence", 100, 20)
+        get_chunks_from_text(source, chunk_strategy, chunk_size, chunk_overlap)
         for source in sources
     ]
     _chunks = list(itertools.chain.from_iterable(chunks))
