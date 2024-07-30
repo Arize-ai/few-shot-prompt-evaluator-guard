@@ -14,16 +14,15 @@ from nemoguardrails import LLMRails, RailsConfig
 JAILBREAK_DATASET_FILEPATH = "/Users/juliagomes/few-shot-prompt-evaluator-guard/jailbreak_prompts_2023_05_07.csv"
 # Sourced from HuggingFace dataset https://huggingface.co/datasets/MohamedRashad/ChatGPT-prompts
 VANILLA_PROMPTS_DATASET_FILEPATH = "/Users/juliagomes/few-shot-prompt-evaluator-guard/regular_prompts.json"
-NUM_EVAL_EXAMPLES = 25
+NUM_EVAL_EXAMPLES = 100
 NUM_FEW_SHOT_EXAMPLES = 10
 MODEL = "gpt-4o-mini"
-GPT_BASELINE_OUTPUT_FILE = f"{MODEL}_baseline_output.txt"
+GPT_BASELINE_OUTPUT_FILE = f"{MODEL}_baseline_guard_output.txt"
+NEMO_DATASET_GUARD_OUTFILE = f"nemo_jailbreak_dataset_guard_output.txt"
+NEMO_BASELINE_GUARD_OUTFILE = f"nemo_baseline_guard_output.txt"
 
 
-OUTFILE = f"nemo_jailbreak_dataset_guard_{MODEL}.txt"
-
-
-def evaluate_nemo_guard_on_dataset(rails, test_prompts: List[str]):
+def evaluate_nemo_guard_on_dataset(rails, outfile, test_prompts: List[str]):
     nemo_cannot_respond = "Julia I'm sorry, I can't respond to that."  # Defined in config/flows.co
     num_failed_guard = 0
     num_passed_guard = 0
@@ -40,47 +39,48 @@ def evaluate_nemo_guard_on_dataset(rails, test_prompts: List[str]):
             
             if nemo_cannot_respond in response["content"]:
                 num_failed_guard += 1
-                with open(OUTFILE, "a") as f:
+                with open(outfile, "a") as f:
                     f.write(f"\n\nPROMPT FAILS")
             else:
                 num_passed_guard += 1
-                with open(OUTFILE, "a") as f:
+                with open(outfile, "a") as f:
                     f.write(f"\n\nPROMPT PASSES")
             
             total = num_passed_guard + num_failed_guard
-            with open(OUTFILE, "a") as f:
+            with open(outfile, "a") as f:
                 f.write(f"\n\nprompt:\n{prompt}")
                 f.write(f"\n\nresponse:\n{response}")
                 f.write(f"\n\n{100 * num_failed_guard / total:.2f}% of {total} prompts failed the NeMo Jailbreak guard.")
                 f.write(f"\n\n{100 * num_passed_guard / total:.2f}% of {total} prompts passed the NeMo Jailbreak guard.")
         except Exception as e:
-            with open(OUTFILE, "a") as f:
+            with open(outfile, "a") as f:
                 f.write(f"\n\nerror on prompt:\n{str(e)}")
 
     return num_passed_guard, num_failed_guard, latency_measurements
 
 
-def benchmark_nemo(jailbreak_test_prompts, vanilla_prompts):
+def benchmark_nemo(config, outfile, jailbreak_test_prompts, vanilla_prompts):
     # NeMo Guard on Jailbreak dataset
-    config = RailsConfig.from_path("./dataset_guard_config")
     rails = LLMRails(config)
-    with open(OUTFILE, "a") as f:
+    with open(outfile, "a") as f:
         f.write(f"\nEvaluate the NeMo Jailbreak Guard against {len(jailbreak_test_prompts)} examples")
     num_passed_nemo, num_failed_nemo, latency_measurements = evaluate_nemo_guard_on_dataset(
         rails=rails,
+        outfile=outfile,
         test_prompts=jailbreak_test_prompts)
-    with open(OUTFILE, "a") as f:
+    with open(outfile, "a") as f:
         f.write(f"\n{num_failed_nemo} True Positives")
         f.write(f"\n{num_passed_nemo} False Negatives")
         f.write(f"\n{statistics.median(latency_measurements)} median latency\n{statistics.mean(latency_measurements)} mean latency\n{max(latency_measurements)} max latency")
 
     # NeMo Guard on Vanilla dataset
-    with open(OUTFILE, "a") as f:
+    with open(outfile, "a") as f:
         f.write(f"\nEvaluate the NeMo Jailbreak Guard against {len(vanilla_prompts)} examples")
     num_passed_nemo, num_failed_nemo, latency_measurements = evaluate_nemo_guard_on_dataset(
         rails=rails,
+        outfile=outfile,
         test_prompts=vanilla_prompts)
-    with open(OUTFILE, "a") as f:
+    with open(outfile, "a") as f:
         f.write(f"\n{num_passed_nemo} True Negatives")
         f.write(f"\n{num_failed_nemo} False Positives")
         f.write(f"\n{statistics.median(latency_measurements)} median latency\n{statistics.mean(latency_measurements)} mean latency\n{max(latency_measurements)} max latency")
@@ -207,7 +207,12 @@ def main():
     vanilla_prompts = vanilla_prompts[:NUM_EVAL_EXAMPLES]
 
     # Benchmark Nvidia NeMo off-the-shelf jailbreak Guard
-    benchmark_nemo(jailbreak_test_prompts=jailbreak_test_prompts, vanilla_prompts=vanilla_prompts)
+    config = RailsConfig.from_path("./default_jailbreak_guard")
+    benchmark_nemo(config=config, outfile=NEMO_BASELINE_GUARD_OUTFILE, jailbreak_test_prompts=jailbreak_test_prompts, vanilla_prompts=vanilla_prompts)
+
+    # Benchmark dataset embeddings guard
+    config = RailsConfig.from_path("./dataset_guard_config")
+    benchmark_nemo(config=config, outfile=NEMO_DATASET_GUARD_OUTFILE, jailbreak_test_prompts=jailbreak_test_prompts, vanilla_prompts=vanilla_prompts)
 
     # Evaluate Open AI baseline
     '''with open(GPT_BASELINE_OUTPUT_FILE, "a") as f:

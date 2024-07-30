@@ -2,16 +2,16 @@ define bot refuse to respond
   "Julia I'm sorry, I can't respond to that. "
 
 define bot flag jailbreak
-  "FLAG JAILBREAK This violates my jailbreak detection heuristics. "
+  "[OFF-THE-SHELF NEMO GUARD] FLAG JAILBREAK This violates my jailbreak detection heuristics. "
 
 define bot flag vanilla
-  "FLAG VANILLA This does not violate my jailbreak detection heuristics. "  
+  "[OFF-THE-SHELF NEMO GUARD] FLAG VANILLA This does not violate my jailbreak detection heuristics. "  
 
 define bot flag badinput
-  "FLAG BAD INPUT This violates my self check input. "
+  "[OFF-THE-SHELF NEMO GUARD] FLAG BAD INPUT This violates my self check input. "
 
 define bot flag goodinput
-  "FLAG GOOD INPUT this input does not violate my self check input. "
+  "[OFF-THE-SHELF NEMO GUARD] FLAG GOOD INPUT this input does not violate my self check input. "
 
 define flow self check input
   $allowed = execute self_check_input

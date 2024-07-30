@@ -10,7 +10,7 @@ from nemoguardrails.llm.taskmanager import LLMTaskManager
 log = logging.getLogger(__name__)
 
 
-THRESHOLD = 0.2
+THRESHOLD = 0.23
 
 
 def _embed_function(text) -> np.ndarray:
