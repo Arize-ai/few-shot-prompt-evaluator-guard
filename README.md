@@ -28,7 +28,7 @@ The “regular” prompts come from the [HuggingFace ChatGPT-prompts](https://hu
 
 ## Benchmark Results
 
-Pretty | GPT-4o-mini (no Guard) | Off-the-Shelf NeMo Guard | Dataset Embeddings Guard
+"" | GPT-4o-mini (no Guard) | Off-the-Shelf NeMo Guard | Dataset Embeddings Guard
 --- | --- | --- | ---
 Precision | 0.88 | 0.92 | 0.88
 Recall | 0.70 | 0.90 | 0.94
