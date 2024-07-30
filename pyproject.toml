@@ -1,13 +1,16 @@
 [project]
-name = "few-shot-prompt-evaluator-guard"
+name = "validator-template"
 version = "0.0.0"
-description = "Dataset embeddings guard using NeMo."
+description = "Template repo for Guardrails Hub validators."
 authors = [
-    {name = "Arize AI", email = "jgomes@arize.com"}
+    {name = "Guardrails AI", email = "contact@guardrailsai.com"}
 ]
 license = {file = "LICENSE"}
 readme = "README.md"
 requires-python = ">= 3.8.1"
+dependencies = [
+    "guardrails-ai>=0.4.0"
+]
 
 [project.optional-dependencies]
 dev = [
@@ -19,5 +22,9 @@ dev = [
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-rP"
+testpaths = [
+    "tests"
+]
 
 [tool.pyright]
+include = ["validator"]
