@@ -60,12 +60,12 @@ def query_vector_collection(
     
     # Get top-k closest distances
     lowest_distances = cos_distances[low_ind]
-    return lowest_distances
+    return lowest_distances, low_ind
 
 
 @action()
 async def dataset_embeddings(
-    llm_task_manager: LLMTaskManager, context: Optional[dict] = None, source_embeddings: Optional[list] = None,
+    llm_task_manager: LLMTaskManager, context: Optional[dict] = None, source_embeddings: Optional[list] = None, chunks: List[str] = None
 ):
     """Validation function for the ArizeDatasetEmbeddings validator. If the cosine distance
     of the user input embeddings is below the user-specified threshold of the closest embedded chunk
@@ -84,10 +84,11 @@ async def dataset_embeddings(
     
     # Get closest chunk in the embedded few shot examples of jailbreak prompts.
     # Get cosine distance between the embedding of the user message and the closest embedded jailbreak prompts chunk.
-    lowest_distance = query_vector_collection(text=user_message, source_embeddings=source_embeddings)
+    lowest_distance, low_ind = query_vector_collection(text=user_message, source_embeddings=source_embeddings)
     
     if lowest_distance < THRESHOLD:
-        print(f"FailResult: cosine distance is {lowest_distance}")
+        print(f"FailResult: cosine distance to closest chunk is {lowest_distance}")
+        print(f"\nClosest chunk to training dataset: {chunks[low_ind]}")
         # At least one jailbreak embedding chunk was within the cosine distance threshold from the user input embedding
         return True
     # All chunks exceeded the cosine distance threshold

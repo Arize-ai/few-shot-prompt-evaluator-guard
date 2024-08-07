@@ -93,10 +93,11 @@ def init(app: LLMRails, sources: List[str] = DEFAULT_FEW_SHOT_TRAIN_PROMPTS, chu
         get_chunks_from_text(source, chunk_strategy, chunk_size, chunk_overlap)
         for source in sources
     ]
-    _chunks = list(itertools.chain.from_iterable(chunks))
+    chunks = list(itertools.chain.from_iterable(chunks))
 
     # Create embeddings
-    source_embeddings = np.array(_embed_function(_chunks)).squeeze()
+    source_embeddings = np.array(_embed_function(chunks)).squeeze()
 
     # Register the action parameter
     app.register_action_param("source_embeddings", source_embeddings)
+    app.register_action_param("chunks", chunks)
