@@ -90,10 +90,13 @@ async def dataset_embeddings(
         lowest_distance, low_ind = query_vector_collection(text=user_message, source_embeddings=source_embeddings)
         
         if lowest_distance < THRESHOLD:
+            print(f"FailResult: cosine distance to closest chunk is {lowest_distance}")
+            print(f"\nClosest chunk to training dataset: {chunks[low_ind]}")
             result = True
             span.set_attribute("result", "fail")
             span.set_attribute("closest_chunk", chunks[low_ind])
         else:
+            print(f"PassResult: cosine distance is {lowest_distance}")
             result = False
             span.set_attribute("result", "pass")
         
