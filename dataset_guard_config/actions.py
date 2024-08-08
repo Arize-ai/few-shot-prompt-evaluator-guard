@@ -6,9 +6,10 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 
 from nemoguardrails.actions import action
 from nemoguardrails.llm.taskmanager import LLMTaskManager
+from opentelemetry import trace
 
 log = logging.getLogger(__name__)
-
+tracer = trace.get_tracer(__name__)
 
 THRESHOLD = 0.23
 
@@ -78,19 +79,23 @@ async def dataset_embeddings(
 
     :return: PassResult or FailResult.
     """
-    # Get user message if available explicitly as metadata. If unavailable, use value. This could be
-    # the context, prompt or LLM output, depending on how the Guard is set up and called.
-    user_message = context.get("user_message")
-    
-    # Get closest chunk in the embedded few shot examples of jailbreak prompts.
-    # Get cosine distance between the embedding of the user message and the closest embedded jailbreak prompts chunk.
-    lowest_distance, low_ind = query_vector_collection(text=user_message, source_embeddings=source_embeddings)
-    
-    if lowest_distance < THRESHOLD:
-        print(f"FailResult: cosine distance to closest chunk is {lowest_distance}")
-        print(f"\nClosest chunk to training dataset: {chunks[low_ind]}")
-        # At least one jailbreak embedding chunk was within the cosine distance threshold from the user input embedding
-        return True
-    # All chunks exceeded the cosine distance threshold
-    print(f"PassResult: cosine distance is {lowest_distance}")
-    return False
+    with tracer.start_as_current_span("dataset_embeddings") as span:
+        span.set_attribute("openinference.span.kind", "GUARDRAIL")
+        # Get user message if available explicitly as metadata. If unavailable, use value. This could be
+        # the context, prompt or LLM output, depending on how the Guard is set up and called.
+        user_message = context.get("user_message")
+        
+        # Get closest chunk in the embedded few shot examples of jailbreak prompts.
+        # Get cosine distance between the embedding of the user message and the closest embedded jailbreak prompts chunk.
+        lowest_distance, low_ind = query_vector_collection(text=user_message, source_embeddings=source_embeddings)
+        
+        if lowest_distance < THRESHOLD:
+            result = True
+            span.set_attribute("result", "fail")
+            span.set_attribute("closest_chunk", chunks[low_ind])
+        else:
+            result = False
+            span.set_attribute("result", "pass")
+        
+        span.set_attribute("lowest_distance", lowest_distance)
+        return result
