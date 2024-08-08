@@ -21,7 +21,6 @@ def get_arize_jailbreak_dataset():
     developer_key = getpass(f"Enter your Arize developer_key to get your dataset: ")
     space_id = getpass(f"Enter your Arize space_id to get your dataset: ")
     dataset_id = getpass(f"Enter your Arize dataset_id to get your dataset: ")
-    # , dataset_version="2024-08-08 00:38:56"
     client = ArizeDatasetsClient(developer_key=developer_key)
     # Get the current dataset version
     dataset = client.get_dataset(space_id=space_id, dataset_id=dataset_id)
