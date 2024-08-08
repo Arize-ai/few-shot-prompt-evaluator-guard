@@ -7,7 +7,7 @@ define bot flag jailbreak
 define bot flag vanilla
   "[DATASET NEMO GUARD] FLAG VANILLA This is not similar to my jailbreak embeddings dataset. "
 
-define flow dataset embeddings
+define flow arize dataset embeddings nemo guard
   $is_jailbreak = execute dataset_embeddings
   if $is_jailbreak
     bot flag jailbreak

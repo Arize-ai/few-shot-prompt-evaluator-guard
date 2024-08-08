@@ -13,7 +13,7 @@ define bot flag badinput
 define bot flag goodinput
   "[OFF-THE-SHELF NEMO GUARD] FLAG GOOD INPUT this input does not violate my self check input. "
 
-define flow self check input
+define flow off the shelf nemo jailbreak guards
   $allowed = execute self_check_input
   if not $allowed
     bot flag badinput
