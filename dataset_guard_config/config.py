@@ -5,13 +5,25 @@ import numpy as np
 import nltk
 import tiktoken
 import itertools
+import json
 from typing import List
+from getpass import getpass
 from dataset_guard_config.dataset import DEFAULT_FEW_SHOT_TRAIN_PROMPTS
+from arize.experimental.datasets import ArizeDatasetsClient
 
 
 CHUNK_STRATEGY = "sentence"
 CHUNK_SIZE = 100
 CHUNK_OVERLAP = 20
+
+
+def get_arize_jailbreak_dataset():
+    developer_key = getpass(f"Enter your Arize developer_key to get your dataset: ")
+    space_id = getpass(f"Enter your Arize space_id to get your dataset: ")
+    client = ArizeDatasetsClient(developer_key=developer_key)
+    # Get the current dataset version
+    dataset = client.get_dataset(space_id=space_id, dataset_id="RGF0YXNldDo0MDE6c25waA==", dataset_version="2024-08-08 00:38:56")
+    return [json.loads(prompt)['messages'][0]["content"] for prompt in dataset['attributes.input.value'].tolist()]
 
 
 def get_chunks_from_text(
@@ -82,7 +94,7 @@ def _embed_function(text) -> np.ndarray:
     return np.array(embeddings_out)
 
 
-def init(app: LLMRails, sources: List[str] = DEFAULT_FEW_SHOT_TRAIN_PROMPTS, chunk_strategy: str = CHUNK_STRATEGY,
+def init(app: LLMRails, sources: List[str] = get_arize_jailbreak_dataset(), chunk_strategy: str = CHUNK_STRATEGY,
          chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP):
     # Validate we have a non-empty dataset containing string messages
     for prompt in sources:
