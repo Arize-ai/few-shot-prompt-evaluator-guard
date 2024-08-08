@@ -21,8 +21,10 @@ from nemoguardrails.library.jailbreak_detection.request import (
     jailbreak_detection_heuristics_request,
 )
 from nemoguardrails.llm.taskmanager import LLMTaskManager
+from opentelemetry import trace
 
 log = logging.getLogger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 @action()
@@ -43,10 +45,14 @@ async def jailbreak_detection_heuristics(
             check_jailbreak_length_per_perplexity,
             check_jailbreak_prefix_suffix_perplexity,
         )
-        lp_check = check_jailbreak_length_per_perplexity(prompt, lp_threshold)
-        ps_ppl_check = check_jailbreak_prefix_suffix_perplexity(
-            prompt, ps_ppl_threshold
-        )
+        with tracer.start_as_current_span("check_jailbreak_length_per_perplexity") as span:
+            lp_check = check_jailbreak_length_per_perplexity(prompt, lp_threshold)
+            span.set_attribute("lp_check_result", lp_check["jailbreak"])
+
+        with tracer.start_as_current_span("check_jailbreak_prefix_suffix_perplexity") as span:
+            ps_ppl_check = check_jailbreak_prefix_suffix_perplexity(prompt, ps_ppl_threshold)
+            span.set_attribute("ps_ppl_check_result", ps_ppl_check["jailbreak"])
+
         jailbreak = any([lp_check["jailbreak"], ps_ppl_check["jailbreak"]])
         return jailbreak
 
