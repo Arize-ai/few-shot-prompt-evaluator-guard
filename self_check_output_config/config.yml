@@ -1,0 +1,12 @@
+models:
+  - type: main
+    engine: openai
+    model: gpt-4o
+
+rails:
+  config:
+    lowest_temperature: 0.5
+
+  output:
+    flows:
+      - self check output
