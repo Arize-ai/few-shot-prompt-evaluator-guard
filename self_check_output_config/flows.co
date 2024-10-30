@@ -1,10 +1,9 @@
+define bot refuse to respond
+  "[NEMO TEST] Julia I'm sorry, I can't respond to that. "
 
-flow self check output
-  $allowed = await SelfCheckOutputAction
+define flow self check output
+  $allowed = execute self_check_output
 
   if not $allowed
-    if $system.config.enable_rails_exceptions
-      send OutputRailException(message="[Julia's self check output demo for Lowe's] Output not allowed. The output was blocked by the 'self check output' flow.")
-    else
-      bot refuse to respond
-      abort
+    bot refuse to respond
+    stop
